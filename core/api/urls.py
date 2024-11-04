@@ -13,4 +13,5 @@ urlpatterns = [
 
     #articles of user
     path('users/<int:user_id>/articles/',views.UserArticleListView.as_view(),name = 'user_article_list'),
+    path('users/<int:user_id>/articles/<int:article_id>',views.UserArticleDetailView.as_view(),name = 'user_article_detail'),
 ]

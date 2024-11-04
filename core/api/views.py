@@ -52,3 +52,35 @@ class UserArticleListView(APIView):
             serializer.save()
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+class UserArticleDetailView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self,user_id,article_id):
+        try:
+            user = User.objects.get(pk = user_id)
+            article = user.articles.get(pk = article_id)
+            return article
+        except Article.DoesNotExist:
+            raise Http404
+
+    def get(self,request,user_id,article_id):
+        article = self.get_object(user_id,article_id)
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data, status = status.HTTP_200_OK)
+    
+
+    def put(self,request,user_id,article_id):
+        article = self.get_object(user_id,article_id)
+        author_instance = User.objects.get(pk = user_id)
+        serializer = ArticleSerializer(article, data = request.data, context = {'author':author_instance})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status = status.HTTP_200_OK)
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self,request,user_id,article_id):
+        article = self.get_object(user_id,article_id)
+        article.delete()
+        return Response({'message':'article deleted successfully'}, status = status.HTTP_200_OK)
