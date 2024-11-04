@@ -35,6 +35,6 @@ class ArticleSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         author = self.context['author']
-        validated_data.pop('author')#remove the author to validated data
-        article = Article.objects.create(user = author, **validated_data)
+        validated_data.pop('author',None)#remove the author to validated data
+        article = Article.objects.create(author = author, **validated_data)
         return article

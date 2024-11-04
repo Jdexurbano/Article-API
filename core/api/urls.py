@@ -10,4 +10,7 @@ urlpatterns = [
 
     #articles
     path('articles/',views.ArticleListView.as_view(),name = 'article_list'),
+
+    #articles of user
+    path('users/<int:user_id>/articles/',views.UserArticleListView.as_view(),name = 'user_article_list'),
 ]
