@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from core.models import Article
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(write_only = True, required = True)
@@ -25,3 +26,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+class ArticleSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Article
+        fields = '__all__'
+    
+    def create(self, validated_data):
+        author = self.context['author']
+        validated_data.pop('author')#remove the author to validated data
+        article = Article.objects.create(user = author, **validated_data)
+        return article
