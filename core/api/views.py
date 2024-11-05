@@ -7,11 +7,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 from .serializers import UserRegistrationSerializer, ArticleSerializer
+from drf_yasg.utils import swagger_auto_schema
 
 
 #class view for user registration
 class UserRegistrationView(APIView):
 
+    @swagger_auto_schema(request_body = UserRegistrationSerializer)
     def post(self,request):
         serializer = UserRegistrationSerializer(data = request.data)
         if serializer.is_valid():
@@ -27,6 +29,7 @@ class ArticleListView(APIView):
     
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(responses = {200:ArticleSerializer()})
     def get(self,request):
         article = Article.objects.all()
         serializer = ArticleSerializer(article, many = True)
@@ -43,12 +46,14 @@ class UserArticleListView(APIView):
         except User.DoesNotExist:
             raise NotFound(detail = "user not found")
 
+    @swagger_auto_schema(responses = {200:ArticleSerializer()})
     def get(self,request,user_id):
         user = self.get_object(user_id)
         articles = user.articles.all()
         serializer = ArticleSerializer(articles, many = True)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
+    @swagger_auto_schema(responses = {201:ArticleSerializer()}, request_body = ArticleSerializer)
     def post(self,request,user_id):
         author = self.get_object(user_id)
         serializer = ArticleSerializer(data = request.data)
@@ -70,12 +75,14 @@ class UserArticleDetailView(APIView):
         except Article.DoesNotExist:
             raise NotFound(detail = "article not found")
 
+    @swagger_auto_schema(responses = {200:ArticleSerializer()})
     def get(self,request,user_id,article_id):
         article = self.get_object(user_id,article_id)
         serializer = ArticleSerializer(article)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
 
+    @swagger_auto_schema(responses = {201:ArticleSerializer()}, request_body = ArticleSerializer)
     def put(self,request,user_id,article_id):
         article = self.get_object(user_id,article_id)
         author_instance = User.objects.get(pk = user_id)
@@ -85,7 +92,8 @@ class UserArticleDetailView(APIView):
             return Response(serializer.data, status = status.HTTP_200_OK)
         return Response({"errors":serializer.errors}, status = status.HTTP_400_BAD_REQUEST)
     
+
     def delete(self,request,user_id,article_id):
         article = self.get_object(user_id,article_id)
         article.delete()
-        return Response({'message':'article deleted successfully'}, status = status.HTTP_200_OK)
+        return Response({'message':'article deleted successfully'}, status = status.HTTP_204_NO_CONTENT)
