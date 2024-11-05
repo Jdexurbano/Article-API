@@ -4,6 +4,7 @@ from core.models import Article
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 from .serializers import UserRegistrationSerializer, ArticleSerializer
 
@@ -16,7 +17,10 @@ class UserRegistrationView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({"message":"account successfully created"}, status = status.HTTP_201_CREATED)
-        return Response(serializer.errors,status = status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "errors":serializer.errors,
+            "message":"registration failed due to validation errors"
+        },status = status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleListView(APIView):
@@ -37,7 +41,7 @@ class UserArticleListView(APIView):
         try:
             return User.objects.get(pk = user_id)
         except User.DoesNotExist:
-            raise Http404
+            raise NotFound(detail = "user not found")
 
     def get(self,request,user_id):
         user = self.get_object(user_id)
@@ -51,7 +55,7 @@ class UserArticleListView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status = status.HTTP_201_CREATED)
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response({"errors":serializer.errors}, status = status.HTTP_400_BAD_REQUEST)
 
 class UserArticleDetailView(APIView):
 
@@ -63,7 +67,7 @@ class UserArticleDetailView(APIView):
             article = user.articles.get(pk = article_id)
             return article
         except Article.DoesNotExist:
-            raise Http404
+            raise NotFound(detail = "article not found")
 
     def get(self,request,user_id,article_id):
         article = self.get_object(user_id,article_id)
@@ -78,7 +82,7 @@ class UserArticleDetailView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status = status.HTTP_200_OK)
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response({"errors":serializer.errors}, status = status.HTTP_400_BAD_REQUEST)
     
     def delete(self,request,user_id,article_id):
         article = self.get_object(user_id,article_id)
