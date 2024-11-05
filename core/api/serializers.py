@@ -32,9 +32,3 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = '__all__'
-    
-    def create(self, validated_data):
-        author = self.context['author']
-        validated_data.pop('author',None)#remove the author to validated data
-        article = Article.objects.create(author = author, **validated_data)
-        return article
