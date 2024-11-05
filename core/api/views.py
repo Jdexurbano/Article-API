@@ -51,9 +51,10 @@ class UserArticleListView(APIView):
     
     def post(self,request,user_id):
         author = self.get_object(user_id)
-        serializer = ArticleSerializer(data = request.data, context = {'author':author})
+        serializer = ArticleSerializer(data = request.data)
         if serializer.is_valid():
-            serializer.save()
+            #pass the author instance
+            serializer.save(author = author)
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response({"errors":serializer.errors}, status = status.HTTP_400_BAD_REQUEST)
 
@@ -78,7 +79,7 @@ class UserArticleDetailView(APIView):
     def put(self,request,user_id,article_id):
         article = self.get_object(user_id,article_id)
         author_instance = User.objects.get(pk = user_id)
-        serializer = ArticleSerializer(article, data = request.data, context = {'author':author_instance})
+        serializer = ArticleSerializer(article, data = request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status = status.HTTP_200_OK)
